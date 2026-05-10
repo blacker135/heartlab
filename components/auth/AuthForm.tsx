@@ -21,16 +21,22 @@ export function AuthForm() {
     setLoading(true);
     setMessage(null);
 
+    // 标记是否在延迟恢复 loading（注册成功后使用）
+    let delayLoading = false;
+
     try {
       if (isSignUp) {
         const { error } = await authClient.signUp.email({ name, email, password });
         if (error) {
           setMessage({ type: 'error', text: error.message || 'Sign up failed' });
         } else {
+          // 注册成功：保持 loading 状态防止重复提交，1.5s 后自动切回登录页
+          delayLoading = true;
           setMessage({ type: 'success', text: 'Account created! Redirecting to sign in...' });
           setTimeout(() => {
             setIsSignUp(false);
             setMessage(null);
+            setLoading(false);
           }, 1500);
         }
       } else {
@@ -45,7 +51,9 @@ export function AuthForm() {
       console.error('AuthForm submit error:', err);
       setMessage({ type: 'error', text: 'An unexpected error occurred. Please try again.' });
     } finally {
-      setLoading(false);
+      if (!delayLoading) {
+        setLoading(false);
+      }
     }
   };
 
