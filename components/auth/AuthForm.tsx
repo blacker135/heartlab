@@ -3,9 +3,12 @@
 'use client';
 
 import { useState, FormEvent } from 'react';
+import { useParams } from 'next/navigation';
 import { authClient } from '@/lib/auth/client';
 
 export function AuthForm() {
+  const params = useParams<{ lang: string }>();
+  const lang = params?.lang || 'en';
   const [name, setName] = useState('');
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
@@ -31,7 +34,7 @@ export function AuthForm() {
         if (error) {
           setMessage({ type: 'error', text: error.message || 'Sign in failed' });
         } else {
-          window.location.href = '/en/chat/liam';
+          window.location.href = `/${lang}/chat/liam`;
         }
       }
     } catch (err) {
