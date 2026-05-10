@@ -1,6 +1,6 @@
 /**
  * 语言路由布局
- * 为每个语言路由提供 next-intl 国际化上下文
+ * 为每个语言路由提供 next-intl 国际化上下文 + 全局导航栏
  */
 
 import { NextIntlClientProvider } from 'next-intl';
@@ -8,6 +8,7 @@ import { getMessages } from 'next-intl/server';
 import { notFound } from 'next/navigation';
 import { routing } from '@/i18n/routing';
 import { Providers } from '@/components/common/Providers';
+import { Navbar } from '@/components/common/Navbar';
 
 // 支持的语言类型
 type SupportedLocale = 'en' | 'zh';
@@ -21,7 +22,7 @@ export function generateStaticParams() {
 
 /**
  * 语言布局组件
- * 校验语言有效性，加载翻译消息，并用 NextIntlClientProvider 包裹子组件
+ * 校验语言有效性，加载翻译消息，渲染全局导航栏和子组件
  */
 export default async function LangLayout({
   children,
@@ -42,7 +43,11 @@ export default async function LangLayout({
 
   return (
     <NextIntlClientProvider messages={messages}>
-      <Providers>{children}</Providers>
+      <Navbar lang={lang} />
+      {/* pt-14 为固定导航栏留出空间（h-14 = 56px） */}
+      <div className="pt-14">
+        <Providers>{children}</Providers>
+      </div>
     </NextIntlClientProvider>
   );
 }

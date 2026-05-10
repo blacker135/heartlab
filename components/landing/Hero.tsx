@@ -72,7 +72,7 @@ export function Hero({ lang }: { lang: string }) {
           >
             {t('cta')} &rarr;
           </Link>
-          <p className="mt-3 text-sm text-[#999999]">{t('ctaSubtext')}</p>
+
         </motion.div>
       </motion.div>
 

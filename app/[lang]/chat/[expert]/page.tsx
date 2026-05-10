@@ -248,7 +248,7 @@ export default function ChatPageClient() {
 
   // ---------- 渲染 ----------
   return (
-    <div className="flex h-screen overflow-hidden">
+    <div className="flex h-[calc(100vh-3.5rem)] overflow-hidden">
       {/* 左侧：对话列表侧边栏（含移动端抽屉支持） */}
       <ChatSidebar
         sidebarOpen={sidebarOpen}
