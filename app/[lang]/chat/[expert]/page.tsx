@@ -61,6 +61,38 @@ export default function ChatPageClient() {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
+  // ---------- URL conversationId 变化 → 加载历史消息（侧边栏点击跳转）----------
+  const urlConvId = searchParams.get('c');
+
+  useEffect(() => {
+    if (!urlConvId) return;
+
+    setConversationId(urlConvId);
+    setMessages([]);
+    setError(null);
+
+    fetch(`/api/conversations/${urlConvId}`)
+      .then((res) => {
+        if (!res.ok) throw new Error('Failed');
+        return res.json();
+      })
+      .then((data) => {
+        if (data.messages?.length > 0) {
+          setMessages(
+            data.messages.map(
+              (m: { role: string; content: string }) => ({
+                role: m.role as 'user' | 'assistant',
+                content: m.content,
+              }),
+            ),
+          );
+        }
+      })
+      .catch((err) =>
+        console.error('Failed to load conversation:', err),
+      );
+  }, [urlConvId]);
+
   // ---------- 发送消息 ----------
   const handleSend = useCallback(
     async (message: string) => {
@@ -202,21 +234,25 @@ export default function ChatPageClient() {
 
   // ---------- 切换专家 ----------
   const handleSwitchExpert = async (newExpert: string) => {
-    // 清除错误状态
-    setError(null);
-    setRateLimited(false);
-
     // 关闭面板
     setExpertPanelOpen(false);
 
-    // 如果没有对话 ID，直接切换并清空消息（新对话）
+    // 立即更新专家（前端即时反馈）
+    setCurrentExpert(newExpert);
+
+    // 如果没有对话 ID，直接清空消息（新对话）
     if (!conversationId) {
-      setCurrentExpert(newExpert);
       setMessages([]);
+      setError(null);
+      setRateLimited(false);
       return;
     }
 
-    // 有对话 ID → 调用切换 API 获取过渡消息
+    // 有对话 ID → 调用切换 API 获取 SSE 流式过渡消息
+    setSending(true);
+    setError(null);
+    setRateLimited(false);
+
     try {
       const res = await fetch('/api/chat/switch', {
         method: 'POST',
@@ -229,24 +265,70 @@ export default function ChatPageClient() {
       });
 
       if (!res.ok) {
-        // 降级：直接切换专家
-        setCurrentExpert(newExpert);
+        setSending(false);
         return;
       }
 
-      const data = await res.json();
-      setCurrentExpert(newExpert);
+      // 空对话历史时 API 返回 JSON（欢迎语），非 SSE 流
+      const contentType = res.headers.get('Content-Type') || '';
+      if (contentType.includes('application/json')) {
+        const data = await res.json();
+        if (data.content) {
+          setMessages((prev) => [
+            ...prev,
+            { role: 'assistant', content: data.content },
+          ]);
+        }
+        setSending(false);
+        return;
+      }
 
-      // 添加 AI 过渡消息
-      if (data.content) {
-        setMessages((prev) => [
-          ...prev,
-          { role: 'assistant', content: data.content },
-        ]);
+      // 读取 SSE 流
+      const reader = res.body?.getReader();
+      if (!reader) {
+        setSending(false);
+        return;
+      }
+
+      const decoder = new TextDecoder();
+      let aiContent = '';
+
+      // 添加空的 AI 消息占位（流式更新）
+      setMessages((prev) => [...prev, { role: 'assistant', content: '' }]);
+
+      while (true) {
+        const { done, value } = await reader.read();
+        if (done) break;
+
+        const chunk = decoder.decode(value, { stream: true });
+        const lines = chunk.split('\n').filter((l) => l.startsWith('data: '));
+
+        for (const line of lines) {
+          const data = line.slice(6);
+          if (data === '[DONE]') break;
+
+          try {
+            const parsed = JSON.parse(data);
+            if (parsed.content) {
+              aiContent += parsed.content;
+              setMessages((prev) => {
+                const updated = [...prev];
+                updated[updated.length - 1] = {
+                  role: 'assistant',
+                  content: aiContent,
+                };
+                return updated;
+              });
+            }
+          } catch {
+            // 跳过无法解析的行
+          }
+        }
       }
     } catch (err) {
       console.error('Expert switch error:', err);
-      setCurrentExpert(newExpert);
+    } finally {
+      setSending(false);
     }
   };
 
@@ -273,6 +355,7 @@ export default function ChatPageClient() {
           onOpenExpertPanel={() => setExpertPanelOpen(true)}
           expert={currentExpert}
           onToggleSidebar={() => setSidebarOpen(true)}
+          disabled={sending}
         />
 
         {/* 错误提示横幅（非消息型错误，如网络错误、限流等） */}
@@ -314,7 +397,7 @@ export default function ChatPageClient() {
         />
 
         {/* 底部输入区域 */}
-        <ChatInput onSend={handleSend} />
+        <ChatInput onSend={handleSend} disabled={sending} />
       </div>
 
       {/* 专家切换浮动面板（条件渲染） */}
@@ -323,7 +406,6 @@ export default function ChatPageClient() {
           onSelect={handleSwitchExpert}
           onClose={() => setExpertPanelOpen(false)}
           currentExpert={currentExpert}
-          lang={params.lang}
         />
       )}
     </div>

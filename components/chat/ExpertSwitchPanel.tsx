@@ -27,36 +27,8 @@ interface ExpertSwitchPanelProps {
   onClose: () => void;
   /** 当前选中的专家标识符 */
   currentExpert: string;
-  /** 当前语言 */
-  lang: string;
 }
 
-/** 专家详情数据（名称、头衔、副标题） */
-const EXPERT_DETAILS: Record<
-  string,
-  { name: string; title: string; tagline: string }
-> = {
-  evan: {
-    name: 'Evan Pierce',
-    title: 'The Relationship Stabilizer',
-    tagline: 'Calm, rational, structured guidance for building emotional stability.',
-  },
-  liam: {
-    name: 'Liam Hart',
-    title: 'The Relationship Gardener',
-    tagline: 'Warm, supportive, gently coaching — nurture what matters.',
-  },
-  noah: {
-    name: 'Noah Sinclair',
-    title: 'The Attraction Strategist',
-    tagline: 'Insightful, sharp, slightly playful — understand the dynamics.',
-  },
-  adrian: {
-    name: 'Dr. Adrian Cole',
-    title: 'The Relationship Intervention Specialist',
-    tagline: 'Clinical yet empathetic — crisis recovery with clarity.',
-  },
-};
 
 /**
  * ExpertSwitchPanel — 专家选择浮动面板
@@ -66,9 +38,9 @@ export function ExpertSwitchPanel({
   onSelect,
   onClose,
   currentExpert,
-  lang,
 }: ExpertSwitchPanelProps) {
   const t = useTranslations('chat');
+  const te = useTranslations('experts');
   const panelRef = useRef<HTMLDivElement>(null);
 
   // ---------- 点击外部区域关闭 ----------
@@ -129,14 +101,13 @@ export function ExpertSwitchPanel({
             {t('chooseExpert')}
           </h2>
           <p className="mt-1 text-center text-sm text-text-secondary">
-            Each expert brings a unique perspective to your conversation
+            {t('expertPanelSubtitle')}
           </p>
 
           {/* 专家列表 — 4 个按钮垂直排列 */}
           <div className="mt-6 space-y-3">
             {expertIds.map((id) => {
               const meta = EXPERT_META[id];
-              const details = EXPERT_DETAILS[id];
               const isActive = currentExpert === id;
 
               return (
@@ -160,16 +131,16 @@ export function ExpertSwitchPanel({
                   >
                     {meta.emoji}
                   </span>
-                  {/* 专家信息 */}
+                  {/* 专家信息（翻译字段） */}
                   <div className="min-w-0 flex-1">
                     <p className="text-sm font-semibold text-text-primary">
-                      {details.name}
+                      {te(`${id}.name`)}
                     </p>
                     <p className="text-xs text-text-secondary">
-                      {details.title}
+                      {te(`${id}.role`)}
                     </p>
                     <p className="mt-0.5 text-xs text-text-secondary/70">
-                      {details.tagline}
+                      {te(`${id}.description`)}
                     </p>
                   </div>
                 </button>
@@ -183,7 +154,7 @@ export function ExpertSwitchPanel({
             onClick={onClose}
             className="mt-6 w-full rounded-[16px] border border-gray-200 py-2.5 text-sm font-medium text-text-secondary transition-colors hover:bg-gray-50"
           >
-            Cancel
+            {t('cancel')}
           </button>
         </motion.div>
       </motion.div>

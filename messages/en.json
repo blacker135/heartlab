@@ -210,7 +210,9 @@
     "retry": "Retry",
     "notFound": "This conversation could not be found.",
     "goBack": "Go back",
-    "chooseExpert": "Choose an expert to begin",
+    "chooseExpert": "Choose your guide",
+    "expertPanelSubtitle": "Each expert brings a unique perspective to your conversation",
+    "cancel": "Cancel",
     "switchExpert": "Switch expert",
     "switchingExpert": "Switching to {name}...",
     "currentExpert": "Currently talking to {name}"

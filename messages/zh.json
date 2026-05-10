@@ -210,7 +210,9 @@
     "retry": "重试",
     "notFound": "找不到该对话。",
     "goBack": "返回",
-    "chooseExpert": "选择一位专家开始对话",
+    "chooseExpert": "选择你的顾问",
+    "expertPanelSubtitle": "每位专家都为你的对话带来独特视角",
+    "cancel": "取消",
     "switchExpert": "切换专家",
     "switchingExpert": "正在切换到 {name}...",
     "currentExpert": "当前正在与 {name} 对话"

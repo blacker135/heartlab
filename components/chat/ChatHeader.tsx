@@ -19,6 +19,8 @@ interface ChatHeaderProps {
   expert: string;
   /** 移动端切换侧边栏的回调 */
   onToggleSidebar?: () => void;
+  /** 禁用专家切换（内容生成中） */
+  disabled?: boolean;
 }
 
 /** 专家名称映射（简短显示名） */
@@ -38,6 +40,7 @@ export function ChatHeader({
   onOpenExpertPanel,
   expert,
   onToggleSidebar,
+  disabled = false,
 }: ChatHeaderProps) {
   // ---------- 获取当前专家元数据 ----------
   const expertId = expert as ExpertId;
@@ -76,7 +79,8 @@ export function ChatHeader({
       <button
         type="button"
         onClick={onOpenExpertPanel}
-        className="flex items-center gap-2 rounded-[14px] border border-gray-200 bg-[#FAF7F2] px-3 py-2 text-sm font-medium text-text-primary transition-colors hover:bg-gray-100 lg:px-4"
+        disabled={disabled}
+        className="flex items-center gap-2 rounded-[14px] border border-gray-200 bg-[#FAF7F2] px-3 py-2 text-sm font-medium text-text-primary transition-colors hover:bg-gray-100 disabled:cursor-not-allowed disabled:opacity-50 lg:px-4"
       >
         {/* 专家颜色圆点 */}
         <span

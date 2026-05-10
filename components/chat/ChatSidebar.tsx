@@ -25,7 +25,7 @@ interface ConversationItem {
   id: string;
   expert: string;
   title: string;
-  updated_at: string;
+  updatedAt: string;
 }
 
 /** ChatSidebar Props */
@@ -174,7 +174,7 @@ export function ChatSidebar({ sidebarOpen = false, onClose, refreshKey = 0 }: Ch
                       {conv.title || 'New Conversation'}
                     </p>
                     <p className="text-xs text-text-secondary">
-                      {formatDate(conv.updated_at)}
+                      {formatDate(conv.updatedAt)}
                     </p>
                   </div>
                 </button>

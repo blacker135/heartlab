@@ -1,4 +1,4 @@
-// POST /api/chat/switch — 专家切换 API
+// POST /api/chat/switch — 专家切换 SSE 流式 API
 
 import { auth } from '@/lib/auth';
 import { headers } from 'next/headers';
@@ -49,58 +49,112 @@ export async function POST(request: Request) {
     return Response.json({ error: 'Forbidden' }, { status: 403 });
   }
 
-  const [messagesCount] = await db
-    .select({ count: count() })
-    .from(schema.messages)
-    .where(eq(schema.messages.conversationId, conversation_id));
-
   const expertId = new_expert as ExpertId;
   const lang = language as Language;
-  let transitionMessage: string;
 
-  if (!messagesCount?.count || messagesCount.count === 0) {
-    transitionMessage = getWelcomeMessage(expertId, lang);
-  } else {
-    const recentMessages = await db
-      .select({ role: schema.messages.role, content: schema.messages.content })
-      .from(schema.messages)
-      .where(eq(schema.messages.conversationId, conversation_id))
-      .orderBy(asc(schema.messages.createdAt))
-      .limit(10);
-
-    const context = recentMessages
-      .map((m) => `${m.role === 'user' ? 'User' : 'Previous Guide'}: ${m.content}`)
-      .join('\n\n');
-
-    const expertInfo = getExpertInfo(expertId, lang);
-    const switchPrompt = getSwitchPrompt(expertInfo.name, expertInfo.title, context, lang);
-
-    try {
-      const deepseek = createDeepSeekClient();
-      const response = await deepseek.chat.completions.create({
-        model: 'deepseek-chat',
-        messages: [{ role: 'user', content: switchPrompt }],
-        max_tokens: 512,
-        temperature: 0.8,
-        stream: false,
-      });
-      transitionMessage = response.choices[0]?.message?.content || getWelcomeMessage(expertId, lang);
-    } catch (err) {
-      console.error('DeepSeek switch prompt failed:', err);
-      transitionMessage = getWelcomeMessage(expertId, lang);
-    }
-  }
-
+  // 立即更新对话的专家（在生成过渡消息之前）
   await db
     .update(schema.conversations)
     .set({ expert: expertId, updatedAt: new Date() })
     .where(eq(schema.conversations.id, conversation_id));
 
-  await db.insert(schema.messages).values({
-    conversationId: conversation_id,
-    role: 'assistant',
-    content: transitionMessage,
+  const [messagesCount] = await db
+    .select({ count: count() })
+    .from(schema.messages)
+    .where(eq(schema.messages.conversationId, conversation_id));
+
+  // 无历史消息 → 返回欢迎语（非流式，直接返回）
+  if (!messagesCount?.count || messagesCount.count === 0) {
+    const welcomeMessage = getWelcomeMessage(expertId, lang);
+
+    await db.insert(schema.messages).values({
+      conversationId: conversation_id,
+      role: 'assistant',
+      content: welcomeMessage,
+    });
+
+    return Response.json({ content: welcomeMessage, expert: new_expert });
+  }
+
+  // 有历史 → 构建过渡 prompt + SSE 流式生成
+  const recentMessages = await db
+    .select({ role: schema.messages.role, content: schema.messages.content })
+    .from(schema.messages)
+    .where(eq(schema.messages.conversationId, conversation_id))
+    .orderBy(asc(schema.messages.createdAt))
+    .limit(10);
+
+  const context = recentMessages
+    .map((m) => `${m.role === 'user' ? 'User' : 'Previous Guide'}: ${m.content}`)
+    .join('\n\n');
+
+  const expertInfo = getExpertInfo(expertId, lang);
+  const switchPrompt = getSwitchPrompt(expertInfo.name, expertInfo.title, context, lang);
+
+  const deepseek = createDeepSeekClient();
+  const encoder = new TextEncoder();
+
+  const readable = new ReadableStream({
+    async start(controller) {
+      let fullContent = '';
+      try {
+        const stream = await deepseek.chat.completions.create({
+          model: 'deepseek-chat',
+          messages: [{ role: 'user', content: switchPrompt }],
+          max_tokens: 512,
+          temperature: 0.8,
+          stream: true,
+        });
+
+        for await (const chunk of stream) {
+          const delta = chunk.choices[0]?.delta?.content || '';
+          if (delta) {
+            fullContent += delta;
+            controller.enqueue(encoder.encode(`data: ${JSON.stringify({ content: delta })}\n\n`));
+          }
+        }
+
+        // 保存完整的过渡消息到数据库
+        if (fullContent) {
+          await db.insert(schema.messages).values({
+            conversationId: conversation_id,
+            role: 'assistant',
+            content: fullContent,
+          });
+        } else {
+          // 流式生成为空时，使用欢迎语作为降级
+          const fallback = getWelcomeMessage(expertId, lang);
+          await db.insert(schema.messages).values({
+            conversationId: conversation_id,
+            role: 'assistant',
+            content: fallback,
+          });
+          controller.enqueue(encoder.encode(`data: ${JSON.stringify({ content: fallback })}\n\n`));
+        }
+
+        controller.enqueue(encoder.encode('data: [DONE]\n\n'));
+      } catch (err) {
+        console.error('Switch stream error:', err);
+        // 降级：返回欢迎语
+        const fallback = getWelcomeMessage(expertId, lang);
+        await db.insert(schema.messages).values({
+          conversationId: conversation_id,
+          role: 'assistant',
+          content: fallback,
+        });
+        controller.enqueue(encoder.encode(`data: ${JSON.stringify({ content: fallback })}\n\n`));
+        controller.enqueue(encoder.encode('data: [DONE]\n\n'));
+      } finally {
+        controller.close();
+      }
+    },
   });
 
-  return Response.json({ content: transitionMessage, expert: new_expert });
+  return new Response(readable, {
+    headers: {
+      'Content-Type': 'text/event-stream',
+      'Cache-Control': 'no-cache',
+      Connection: 'keep-alive',
+    },
+  });
 }

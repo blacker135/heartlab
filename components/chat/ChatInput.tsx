@@ -17,30 +17,34 @@ import { useTranslations } from 'next-intl';
 interface ChatInputProps {
   /** 发送消息回调 */
   onSend: (message: string) => void;
+  /** 禁用发送（内容生成中） */
+  disabled?: boolean;
 }
 
 /**
  * ChatInput — 聊天消息输入区域
  * 底部固定区域，包含输入框和发送按钮
  */
-export function ChatInput({ onSend }: ChatInputProps) {
+export function ChatInput({ onSend, disabled = false }: ChatInputProps) {
   const t = useTranslations('chat');
   const [input, setInput] = useState('');
 
   // ---------- 提交处理 ----------
   const handleSubmit = (e: FormEvent) => {
     e.preventDefault();
+    if (disabled) return;
     const trimmed = input.trim();
     if (!trimmed) return;
 
     onSend(trimmed);
-    setInput(''); // 发送后清空
+    setInput('');
   };
 
   // ---------- 键盘事件：Enter 发送，Shift+Enter 换行 ----------
   const handleKeyDown = (e: KeyboardEvent<HTMLTextAreaElement>) => {
     if (e.key === 'Enter' && !e.shiftKey) {
       e.preventDefault();
+      if (disabled) return;
       const trimmed = input.trim();
       if (!trimmed) return;
       onSend(trimmed);
@@ -75,11 +79,11 @@ export function ChatInput({ onSend }: ChatInputProps) {
         {/* 发送按钮 — 圆形 + 箭头图标 */}
         <button
           type="submit"
-          disabled={!input.trim()}
+          disabled={disabled || !input.trim()}
           className="flex h-9 w-9 flex-shrink-0 items-center justify-center rounded-full bg-[#FF7A59] text-white transition-all hover:bg-[#FF7A59]/90 disabled:cursor-not-allowed disabled:opacity-30"
           aria-label={t('send')}
         >
-          {/* ↗ 发送图标 */}
+          {/* ↑ 发送图标 — 垂直向上箭头 */}
           <svg
             className="h-4 w-4"
             fill="none"
@@ -90,7 +94,7 @@ export function ChatInput({ onSend }: ChatInputProps) {
             <path
               strokeLinecap="round"
               strokeLinejoin="round"
-              d="M4.5 19.5l15-15m0 0H8.25m11.25 0v11.25"
+              d="M12 19V5m0 0l-7 7m7-7l7 7"
             />
           </svg>
         </button>
