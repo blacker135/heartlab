@@ -149,8 +149,11 @@ export default function ChatPageClient() {
               const parsed = JSON.parse(data);
               // 处理 conversation_id — 服务端通过 SSE 首条事件返回
               if (parsed.conversation_id) {
+                // 仅在新对话创建时触发侧边栏刷新
+                if (!conversationId) {
+                  setSidebarRefreshKey((k) => k + 1);
+                }
                 setConversationId(parsed.conversation_id);
-                setSidebarRefreshKey((k) => k + 1); // 触发侧边栏刷新
                 continue;
               }
               if (parsed.content) {
