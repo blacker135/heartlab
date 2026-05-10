@@ -146,6 +146,11 @@ export default function ChatPageClient() {
 
             try {
               const parsed = JSON.parse(data);
+              // 处理 conversation_id — 服务端通过 SSE 首条事件返回
+              if (parsed.conversation_id) {
+                setConversationId(parsed.conversation_id);
+                continue;
+              }
               if (parsed.content) {
                 aiContent += parsed.content;
                 // 更新最后一条 AI 消息的内容

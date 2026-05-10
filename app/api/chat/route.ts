@@ -113,6 +113,11 @@ export async function POST(request: Request) {
     async start(controller) {
       let fullContent = '';
       try {
+        // 首先发送 conversation_id，让客户端知道当前对话的 ID
+        controller.enqueue(
+          encoder.encode(`data: ${JSON.stringify({ conversation_id: conversationId })}\n\n`)
+        );
+
         const stream = await deepseek.chat.completions.create({
           model: 'deepseek-chat',
           messages: chatMessages,
