@@ -8,7 +8,6 @@
 
 'use client';
 
-import { useState } from 'react';
 import { EXPERT_META } from '@/lib/prompts/experts';
 import type { ExpertId } from '@/lib/prompts/experts';
 
@@ -32,8 +31,8 @@ const EXPERT_SHORT_NAMES: Record<string, string> = {
 
 /**
  * ChatHeader — 聊天页顶部导航栏
- * 显示当前专家、语言切换和深色模式按钮
- * 移动端显示汉堡菜单按钮用于打开侧边栏
+ * 左侧：移动端汉堡菜单按钮（仅移动端可见）
+ * 右侧：专家切换按钮（颜色圆点 + 名称 + 下拉箭头）
  */
 export function ChatHeader({
   onOpenExpertPanel,
