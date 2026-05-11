@@ -88,6 +88,8 @@ export const subscriptions = pgTable('subscriptions', {
   status: subscriptionStatusEnum('status').notNull().default('active'),
   currentPeriodStart: timestamp('current_period_start'),
   currentPeriodEnd: timestamp('current_period_end'),
+  lemonSqueezyCustomerId: text('lemon_squeezy_customer_id'),   // LS 客户 ID
+  lemonSqueezyOrderId: text('lemon_squeezy_order_id'),         // LS 订单 ID
   cancelAtPeriodEnd: boolean('cancel_at_period_end').notNull().default(false),
   createdAt: timestamp('created_at').defaultNow(),
   updatedAt: timestamp('updated_at').defaultNow(),
