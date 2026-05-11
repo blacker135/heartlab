@@ -22,11 +22,16 @@ export async function POST(request: Request) {
     return Response.json({ error: 'variant_id is required' }, { status: 400 });
   }
 
-  // 验证 redirect_url 必须指向自身域名，防止开放重定向攻击
+  // 验证 redirect_url 必须指向自身域名，使用 URL API 比对其 origin 防止域名欺骗
   if (body.redirect_url) {
-    const appUrl = process.env.NEXT_PUBLIC_APP_URL;
-    if (!appUrl || !body.redirect_url.startsWith(appUrl)) {
-      return Response.json({ error: 'Invalid redirect_url' }, { status: 400 });
+    try {
+      const redirectOrigin = new URL(body.redirect_url).origin;
+      const appOrigin = new URL(process.env.NEXT_PUBLIC_APP_URL!).origin;
+      if (redirectOrigin !== appOrigin) {
+        return Response.json({ error: 'Invalid redirect_url' }, { status: 400 });
+      }
+    } catch {
+      return Response.json({ error: 'Invalid redirect_url format' }, { status: 400 });
     }
   }
 
