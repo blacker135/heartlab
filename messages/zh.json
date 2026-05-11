@@ -14,7 +14,8 @@
     "signup": "开始使用",
     "startChat": "开始对话",
     "logout": "退出登录",
-    "userMenu": "用户菜单"
+    "userMenu": "用户菜单",
+    "pricing": "定价"
   },
 
   "hero": {
@@ -258,6 +259,36 @@
         "我们冷战了——我该如何打破沉默？",
         "重大信任破裂后如何重建？"
       ]
+    }
+  },
+
+  "pricing": {
+    "title": "选择你的方案",
+    "subtitle": "注册即享 3 条免费消息。随时升级，获取更深入的指导。",
+    "monthly": "月付",
+    "yearly": "年付",
+    "year": "年",
+    "month": "月",
+    "yearlySave": "${{monthly}}/月 — 年付更优惠（${{yearly}}/年）",
+    "savePercent": "省 {{percent}}%",
+    "subscribe": "立即订阅",
+    "startTrial": "开始免费试用",
+    "trialBanner": "免费试用：已使用 {{used}}/{{limit}} 条消息。",
+    "trialLink": "订阅解锁无限对话 →",
+    "trialExhausted": "你已用完 3 条免费消息。",
+    "trialExhaustedAction": "订阅后继续对话",
+    "dailyLimitReached": "已达每日消息上限",
+    "expertLocked": "升级到 Pro 或 Ultra 以解锁该专家",
+    "features": {
+      "dailyMessages": "每日 {{count}} 条消息",
+      "expertsStarter": "仅 Evan & Liam",
+      "expertsAll": "全部 4 位专家",
+      "unlimitedMessages": "消息无限制",
+      "historyDays": "{{count}} 天对话历史",
+      "historyForever": "无限对话历史",
+      "effectLight": "轻量指导",
+      "effectStandard": "标准深度",
+      "effectDeep": "深度专注指导"
     }
   }
 }

@@ -14,7 +14,8 @@
     "signup": "Get Started",
     "startChat": "Start Chat",
     "logout": "Logout",
-    "userMenu": "User menu"
+    "userMenu": "User menu",
+    "pricing": "Pricing"
   },
 
   "hero": {
@@ -258,6 +259,36 @@
         "We're in a cold war — how do I break the silence?",
         "How do I rebuild trust after a major breach?"
       ]
+    }
+  },
+
+  "pricing": {
+    "title": "Choose Your Plan",
+    "subtitle": "Start with 3 free messages. Upgrade anytime for deeper guidance.",
+    "monthly": "Monthly",
+    "yearly": "Yearly",
+    "year": "year",
+    "month": "month",
+    "yearlySave": "${{monthly}}/mo — save with yearly billing (${{yearly}}/year)",
+    "savePercent": "Save {{percent}}%",
+    "subscribe": "Subscribe Now",
+    "startTrial": "Start Free Trial",
+    "trialBanner": "Free trial: {{used}}/{{limit}} messages used. ",
+    "trialLink": "Subscribe for unlimited chats →",
+    "trialExhausted": "You've used all 3 free messages.",
+    "trialExhaustedAction": "Subscribe to continue",
+    "dailyLimitReached": "Daily message limit reached",
+    "expertLocked": "Upgrade to Pro or Ultra to unlock this expert",
+    "features": {
+      "dailyMessages": "{{count}} messages / day",
+      "expertsStarter": "Evan & Liam only",
+      "expertsAll": "All 4 experts",
+      "unlimitedMessages": "Unlimited messages",
+      "historyDays": "{{count}}-day chat history",
+      "historyForever": "Unlimited chat history",
+      "effectLight": "Light guidance",
+      "effectStandard": "Standard depth",
+      "effectDeep": "Deep, focused guidance"
     }
   }
 }
