@@ -10,6 +10,8 @@ import { PricingCard } from './PricingCard';
 interface PricingSectionProps {
   lang: string;
   isLoggedIn: boolean;
+  isDomestic: boolean;       // 国内用户 = 一次性买断
+  showTestPlan: boolean;     // 显示 $0.01 测试方案
   variantIds: {
     starterMonthly: string;
     starterYearly: string;
@@ -17,10 +19,14 @@ interface PricingSectionProps {
     proYearly: string;
     ultraMonthly: string;
     ultraYearly: string;
+    starterOnetime: string;
+    proOnetime: string;
+    ultraOnetime: string;
+    test: string;
   };
 }
 
-export function PricingSection({ lang, isLoggedIn, variantIds }: PricingSectionProps) {
+export function PricingSection({ lang, isLoggedIn, isDomestic, showTestPlan, variantIds }: PricingSectionProps) {
   const [isYearly, setIsYearly] = useState(false);
   const tp = useTranslations('pricing');
 
@@ -31,8 +37,11 @@ export function PricingSection({ lang, isLoggedIn, variantIds }: PricingSectionP
       name: 'Starter',
       monthlyPrice: 9,
       yearlyPrice: 99,
+      onetimePrice: 99,
+      validDays: 30,
       variantIdMonthly: variantIds.starterMonthly,
       variantIdYearly: variantIds.starterYearly,
+      variantIdOnetime: variantIds.starterOnetime,
       features: [
         tp('features.dailyMessages', { count: 30 }),
         tp('features.expertsStarter'),
@@ -45,9 +54,12 @@ export function PricingSection({ lang, isLoggedIn, variantIds }: PricingSectionP
       name: 'Pro',
       monthlyPrice: 29,
       yearlyPrice: 319,
+      onetimePrice: 319,
+      validDays: 30,
       highlighted: true,
       variantIdMonthly: variantIds.proMonthly,
       variantIdYearly: variantIds.proYearly,
+      variantIdOnetime: variantIds.proOnetime,
       features: [
         tp('features.dailyMessages', { count: 100 }),
         tp('features.expertsAll'),
@@ -60,8 +72,11 @@ export function PricingSection({ lang, isLoggedIn, variantIds }: PricingSectionP
       name: 'Ultra',
       monthlyPrice: 49,
       yearlyPrice: 539,
+      onetimePrice: 539,
+      validDays: 30,
       variantIdMonthly: variantIds.ultraMonthly,
       variantIdYearly: variantIds.ultraYearly,
+      variantIdOnetime: variantIds.ultraOnetime,
       features: [
         tp('features.unlimitedMessages'),
         tp('features.expertsAll'),
@@ -71,6 +86,11 @@ export function PricingSection({ lang, isLoggedIn, variantIds }: PricingSectionP
     },
   ];
 
+  // 计算年付折扣百分比（取最大折扣展示）
+  const maxSavePercent = Math.round(
+    (1 - plans[2].yearlyPrice / (plans[2].monthlyPrice * 12)) * 100
+  );
+
   return (
     <section className="mx-auto max-w-5xl px-4 py-16">
       {/* 页头 */}
@@ -79,48 +99,90 @@ export function PricingSection({ lang, isLoggedIn, variantIds }: PricingSectionP
         <p className="mt-2 text-text-secondary">{tp('subtitle')}</p>
       </div>
 
-      {/* 月付/年付切换 */}
-      <div className="mt-8 flex items-center justify-center gap-3">
-        <span className={`text-sm ${!isYearly ? 'font-semibold text-text-primary' : 'text-text-secondary'}`}>
-          {tp('monthly')}
-        </span>
-        <button
-          type="button"
-          role="switch"
-          aria-checked={isYearly}
-          onClick={() => setIsYearly(!isYearly)}
-          className={`relative h-7 w-12 rounded-full transition-colors ${
-            isYearly ? 'bg-[#FF7A59]' : 'bg-gray-300'
-          }`}
-        >
-          <span
-            className={`absolute top-0.5 h-6 w-6 rounded-full bg-white shadow transition-transform ${
-              isYearly ? 'translate-x-[22px]' : 'translate-x-[2px]'
-            }`}
-          />
-        </button>
-        <span className={`text-sm ${isYearly ? 'font-semibold text-text-primary' : 'text-text-secondary'}`}>
-          {tp('yearly')}
-        </span>
-        {isYearly && (
-          <span className="rounded-full bg-[#FF7A59]/10 px-2 py-0.5 text-xs font-medium text-[#FF7A59]">
-            {tp('savePercent', { percent: 8 })}
-          </span>
-        )}
-      </div>
+      {/* 月付/年付按钮切换 — 仅国外订阅制用户可见 */}
+      {!isDomestic && (
+        <div className="mt-8 flex items-center justify-center">
+          <div className="inline-flex items-center rounded-full bg-gray-100 p-1">
+            <button
+              type="button"
+              onClick={() => setIsYearly(false)}
+              className={`rounded-full px-4 py-1.5 text-sm font-medium transition-colors ${
+                !isYearly ? 'bg-[#FF7A59] text-white' : 'text-text-secondary'
+              }`}
+            >
+              {tp('monthly')}
+            </button>
+            <button
+              type="button"
+              onClick={() => setIsYearly(true)}
+              className={`rounded-full px-4 py-1.5 text-sm font-medium transition-colors ${
+                isYearly ? 'bg-[#FF7A59] text-white' : 'text-text-secondary'
+              }`}
+            >
+              {tp('yearly')}
+            </button>
+            {/* 年付省钱标签 */}
+            <span className="ml-1 rounded-full bg-[#FF7A59]/10 px-2 py-0.5 text-xs font-medium text-[#FF7A59]">
+              {tp('savePercent', { percent: maxSavePercent })}
+            </span>
+          </div>
+        </div>
+      )}
 
-      {/* 三卡片网格 */}
-      <div className="mt-10 grid gap-6 md:grid-cols-3">
-        {plans.map((plan) => (
+      {/* 国内模式提示 */}
+      {isDomestic && (
+        <p className="mt-6 text-center text-sm text-text-secondary">
+          {tp('oneTime')}
+        </p>
+      )}
+
+      {/* 方案卡片网格 — 测试方案开启时 4 列，否则 3 列 */}
+      <div className={`mt-10 grid gap-6 ${showTestPlan ? 'md:grid-cols-4' : 'md:grid-cols-3'}`}>
+        {plans.map((plan) => {
+          const cardVariantId = isDomestic
+            ? plan.variantIdOnetime
+            : isYearly
+              ? plan.variantIdYearly
+              : plan.variantIdMonthly;
+
+          return (
+            <PricingCard
+              key={plan.id}
+              plan={plan}
+              isYearly={isYearly}
+              isOneTime={isDomestic}
+              isTestPlan={false}
+              isLoggedIn={isLoggedIn}
+              variantId={cardVariantId}
+              lang={lang}
+            />
+          );
+        })}
+
+        {/* $0.01 测试方案 */}
+        {showTestPlan && (
           <PricingCard
-            key={plan.id}
-            plan={plan}
-            isYearly={isYearly}
+            plan={{
+              id: 'test',
+              name: tp('testPlanName'),
+              monthlyPrice: 0.01,
+              yearlyPrice: 0.01,
+              onetimePrice: 0.01,
+              features: [
+                tp('features.dailyMessages', { count: 30 }),
+                tp('features.expertsStarter'),
+                tp('features.historyDays', { count: 7 }),
+                tp('features.effectLight'),
+              ],
+            }}
+            isYearly={false}
+            isOneTime={false}
+            isTestPlan={true}
             isLoggedIn={isLoggedIn}
-            variantId={isYearly ? plan.variantIdYearly : plan.variantIdMonthly}
+            variantId={variantIds.test}
             lang={lang}
           />
-        ))}
+        )}
       </div>
     </section>
   );
