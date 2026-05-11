@@ -20,6 +20,10 @@ interface LSEvent {
       created_at?: string;
       ends_at?: string;
       cancelled?: boolean;
+      order_id?: number;         // 订单 ID
+      first_order_item?: {       // 订阅的首个订单项
+        order_id?: number;
+      };
     };
   };
 }
@@ -47,6 +51,9 @@ export async function POST(request: Request) {
   const renewsAt = event.data.attributes.renews_at;
   const createdAt = event.data.attributes.created_at;
   const cancelled = event.data.attributes.cancelled;
+  const customerId = event.data.attributes.customer_id;
+  const orderId = event.data.attributes.order_id
+    || event.data.attributes.first_order_item?.order_id;
 
   const variantName = getVariantName(variantId);
 
@@ -64,6 +71,8 @@ export async function POST(request: Request) {
           status: status === 'active' ? 'active' : 'cancelled',
           currentPeriodStart: createdAt ? new Date(createdAt) : undefined,
           currentPeriodEnd: renewsAt ? new Date(renewsAt) : undefined,
+          lemonSqueezyCustomerId: customerId ? String(customerId) : undefined,
+          lemonSqueezyOrderId: orderId ? String(orderId) : undefined,
         });
         break;
       }
@@ -73,6 +82,11 @@ export async function POST(request: Request) {
         if (status) updates.status = status === 'active' ? 'active' : status === 'cancelled' ? 'cancelled' : 'expired';
         if (renewsAt) updates.currentPeriodEnd = new Date(renewsAt);
         if (cancelled !== undefined) updates.cancelAtPeriodEnd = cancelled;
+        // 升级/降级时更新 variant
+        if (variantId) {
+          updates.lemonSqueezyVariantId = variantId;
+          if (variantName) updates.variantName = variantName;
+        }
         updates.updatedAt = new Date();
 
         await db
@@ -87,6 +101,24 @@ export async function POST(request: Request) {
           .update(schema.subscriptions)
           .set({ status: 'cancelled', updatedAt: new Date() })
           .where(eq(schema.subscriptions.lemonSqueezySubscriptionId, subId));
+        break;
+      }
+
+      case 'subscription_payment_failed': {
+        await db
+          .update(schema.subscriptions)
+          .set({ status: 'cancelled', updatedAt: new Date() })
+          .where(eq(schema.subscriptions.lemonSqueezySubscriptionId, subId));
+        console.error('[LS Webhook] Payment failed:', { subId, userId, variantName });
+        break;
+      }
+
+      case 'subscription_expired': {
+        await db
+          .update(schema.subscriptions)
+          .set({ status: 'expired', updatedAt: new Date() })
+          .where(eq(schema.subscriptions.lemonSqueezySubscriptionId, subId));
+        console.log('[LS Webhook] Subscription expired:', { subId, userId, variantName });
         break;
       }
 
