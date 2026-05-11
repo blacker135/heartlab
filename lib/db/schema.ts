@@ -67,6 +67,32 @@ export const verification = pgTable('verification', {
 });
 
 // ============================================================
+// Lunara 订阅表
+// ============================================================
+
+export const subscriptionStatusEnum = pgEnum('subscription_status', [
+  'active',
+  'cancelled',
+  'expired',
+]);
+
+export const subscriptions = pgTable('subscriptions', {
+  id: uuid('id').defaultRandom().primaryKey(),
+  userId: text('user_id')
+    .notNull()
+    .references(() => user.id, { onDelete: 'cascade' }),
+  lemonSqueezySubscriptionId: text('lemon_squeezy_subscription_id').notNull().unique(),
+  lemonSqueezyVariantId: text('lemon_squeezy_variant_id').notNull(),
+  variantName: text('variant_name').notNull(), // 'starter' | 'pro' | 'ultra'
+  status: subscriptionStatusEnum('status').notNull().default('active'),
+  currentPeriodStart: timestamp('current_period_start'),
+  currentPeriodEnd: timestamp('current_period_end'),
+  cancelAtPeriodEnd: boolean('cancel_at_period_end').notNull().default(false),
+  createdAt: timestamp('created_at').defaultNow(),
+  updatedAt: timestamp('updated_at').defaultNow(),
+});
+
+// ============================================================
 // Lunara 业务表
 // ============================================================
 
@@ -80,6 +106,7 @@ export const profiles = pgTable('profiles', {
     .notNull()
     .references(() => user.id, { onDelete: 'cascade' }),
   nickname: text('nickname'),
+  trialUsed: text('trial_used').default('0'), // 试用消息使用次数
   createdAt: timestamp('created_at').defaultNow(),
 });
 
