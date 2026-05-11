@@ -8,6 +8,7 @@ import {
   timestamp,
   uuid,
   boolean,
+  integer,
   pgEnum,
   index,
 } from 'drizzle-orm/pg-core';
@@ -106,7 +107,7 @@ export const profiles = pgTable('profiles', {
     .notNull()
     .references(() => user.id, { onDelete: 'cascade' }),
   nickname: text('nickname'),
-  trialUsed: text('trial_used').default('0'), // 试用消息使用次数
+  trialUsed: integer('trial_used').default(0), // 试用消息使用次数
   createdAt: timestamp('created_at').defaultNow(),
 });
 
