@@ -11,41 +11,32 @@ interface PlanData {
   name: string;
   monthlyPrice: number;
   yearlyPrice: number;
-  onetimePrice: number;  // 国内一次性买断价格
   features: string[];
   highlighted?: boolean;
-  validDays?: number; // 一次性买断的有效天数
 }
 
 interface PricingCardProps {
   plan: PlanData;
   isYearly: boolean;
-  isOneTime: boolean;   // 国内一次性买断模式
   isTestPlan: boolean;   // $0.01 测试方案
   isLoggedIn: boolean;
   variantId: string;
   lang: string;
 }
 
-export function PricingCard({ plan, isYearly, isOneTime, isTestPlan, isLoggedIn, variantId, lang }: PricingCardProps) {
+export function PricingCard({ plan, isYearly, isTestPlan, isLoggedIn, variantId, lang }: PricingCardProps) {
   const router = useRouter();
   const tp = useTranslations('pricing');
 
   // 折算月费（年费 ÷ 12）
   const monthlyEquivalent = (plan.yearlyPrice / 12).toFixed(2);
-  // 年付比月付节省的金额
-  const yearlySaving = plan.monthlyPrice * 12 - plan.yearlyPrice;
+  // 年付比月付节省的百分比
+  const savePercent = Math.round((1 - plan.yearlyPrice / (plan.monthlyPrice * 12)) * 100);
 
-  // 确定展示价格和周期
-  const displayPrice = isOneTime
-    ? plan.onetimePrice    // 国内：展示一次性买断价格
-    : isYearly
-      ? monthlyEquivalent  // 国外年付：展示折算月费
-      : plan.monthlyPrice; // 国外月付：展示月费
+  // 展示价格：年付显示折算月费，月付显示月费
+  const displayPrice = isYearly ? monthlyEquivalent : plan.monthlyPrice;
 
-  const periodLabel = isOneTime
-    ? ''                   // 一次性：无周期标注
-    : `/${tp('month')}`;
+  const periodLabel = `/${tp('month')}`;
 
   /** 处理 CTA 按钮点击：未登录跳转登录页，已登录跳转 LemonSqueezy checkout */
   const handleCTA = async () => {
@@ -90,22 +81,15 @@ export function PricingCard({ plan, isYearly, isOneTime, isTestPlan, isLoggedIn,
         )}
       </div>
 
-      {/* 一次性付费标注 */}
-      {isOneTime && plan.validDays && (
-        <p className="mt-1 text-xs text-[#FF7A59]">
-          {tp('validDays', { days: plan.validDays })}
-        </p>
-      )}
-
-      {/* 年付折算：显示年费总额 + 省钱标注 */}
-      {isYearly && !isOneTime && (
-        <div className="mt-1">
-          <p className="text-xs text-text-secondary">
-            ${plan.yearlyPrice}/{tp('year')}
-          </p>
-          <p className="text-xs text-[#FF7A59]">
-            {tp('savePerYear', { amount: yearlySaving })}
-          </p>
+      {/* 年付省钱展示：原月费删除线 + 省钱百分比 */}
+      {isYearly && (
+        <div className="mt-1 flex items-center gap-1.5">
+          <span className="text-xs text-text-secondary line-through">
+            ${plan.monthlyPrice}/{tp('month')}
+          </span>
+          <span className="text-xs text-[#FF7A59] font-medium">
+            {tp('savePerYear', { percent: savePercent })}
+          </span>
         </div>
       )}
 
