@@ -6,9 +6,13 @@
 import { NextIntlClientProvider } from 'next-intl';
 import { getMessages } from 'next-intl/server';
 import { notFound } from 'next/navigation';
+import { headers } from 'next/headers';
 import { routing } from '@/i18n/routing';
 import { Providers } from '@/components/common/Providers';
 import { Navbar } from '@/components/common/Navbar';
+import { auth } from '@/lib/auth';
+import { isAdmin } from '@/lib/admin/guard';
+import AdminRedirect from '@/components/admin/AdminRedirect';
 
 // 支持的语言类型
 type SupportedLocale = 'en' | 'zh';
@@ -41,8 +45,13 @@ export default async function LangLayout({
   // 加载当前语言的翻译消息
   const messages = await getMessages();
 
+  // 检查当前用户是否为管理员（用于登陆后自动跳转）
+  const session = await auth.api.getSession({ headers: await headers() });
+  const adminCheck = session?.user?.id ? await isAdmin(session.user.id) : false;
+
   return (
     <NextIntlClientProvider messages={messages}>
+      <AdminRedirect isAdmin={adminCheck} />
       <Navbar lang={lang} />
       {/* pt-14 为固定导航栏留出空间（h-14 = 56px） */}
       <div className="pt-14">

@@ -12,6 +12,7 @@ import { usePathname } from 'next/navigation';
 import { useTranslations } from 'next-intl';
 import Link from 'next/link';
 import { authClient } from '@/lib/auth/client';
+import NavbarAdminLink from '@/components/admin/NavbarAdminLink';
 
 /** 服务端传来的 session 用户数据 */
 interface NavbarSessionUser {
@@ -65,6 +66,7 @@ interface NavbarClientProps {
   lang: string;
   user: NavbarSessionUser | null;
   membership: MembershipData | null;
+  isAdmin?: boolean;
 }
 
 /**
@@ -72,7 +74,7 @@ interface NavbarClientProps {
  * 根据当前路由切换完整模式/极简模式（聊天页），
  * 提供已登录用户的头像下拉菜单与登出功能。
  */
-export function NavbarClient({ lang, user, membership }: NavbarClientProps) {
+export function NavbarClient({ lang, user, membership, isAdmin = false }: NavbarClientProps) {
   const t = useTranslations('nav');
   const tm = useTranslations('membership');
   const pathname = usePathname();
@@ -290,6 +292,7 @@ export function NavbarClient({ lang, user, membership }: NavbarClientProps) {
                     {user.name || user.email}
                   </div>
                   <div className="my-1 border-t border-gray-100" />
+                  <NavbarAdminLink show={isAdmin} />
                   <Link
                     href={`/${lang}/settings`}
                     role="menuitem"
