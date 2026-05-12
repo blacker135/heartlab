@@ -46,5 +46,8 @@ export async function Navbar({ lang }: NavbarProps) {
     }
   }
 
-  return <NavbarClient lang={lang} user={user} membership={membership} />;
+  // 检查是否为管理员（subscription variantName === 'admin'）
+  const isAdmin = membership?.variant === 'admin';
+
+  return <NavbarClient lang={lang} user={user} membership={membership} isAdmin={isAdmin} />;
 }
