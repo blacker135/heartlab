@@ -3,7 +3,7 @@
 import { auth } from '@/lib/auth';
 import { headers } from 'next/headers';
 import { db, schema } from '@/lib/db';
-import { eq, desc } from 'drizzle-orm';
+import { eq, desc, count } from 'drizzle-orm';
 import type { ExpertId, Language } from '@/lib/prompts/experts';
 
 export async function GET() {
@@ -46,6 +46,26 @@ export async function POST(request: Request) {
 
   const validLanguages: Language[] = ['en', 'zh'];
   const language = validLanguages.includes(body.language as Language) ? body.language as Language : 'en';
+
+  // Ultra 用户对话上限检查
+  const [subscription] = await db
+    .select({ variant: schema.subscriptions.variantName, status: schema.subscriptions.status })
+    .from(schema.subscriptions)
+    .where(eq(schema.subscriptions.userId, session.user.id));
+
+  if (subscription && subscription.status === 'active' && subscription.variant === 'ultra') {
+    const [cnt] = await db
+      .select({ count: count() })
+      .from(schema.conversations)
+      .where(eq(schema.conversations.userId, session.user.id));
+
+    if ((cnt?.count || 0) >= 1000) {
+      return Response.json(
+        { error: 'Conversation limit reached', code: 'CONVERSATION_LIMIT' },
+        { status: 403 },
+      );
+    }
+  }
 
   const [conversation] = await db
     .insert(schema.conversations)
