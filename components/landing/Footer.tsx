@@ -9,6 +9,7 @@
 
 'use client';
 
+import Link from 'next/link';
 import { useParams } from 'next/navigation';
 import { useTranslations } from 'next-intl';
 
@@ -29,18 +30,18 @@ export function Footer() {
 
           {/* 链接区 */}
           <div className="flex items-center gap-6">
-            <a href={`/${lang}/privacy`} className="text-sm text-[#999999] transition-colors hover:text-[#FF7A59]">
+            <Link href={`/${lang}/privacy`} className="text-sm text-[#999999] transition-colors hover:text-[#FF7A59]">
               {t('privacy')}
-            </a>
-            <a href={`/${lang}/terms`} className="text-sm text-[#999999] transition-colors hover:text-[#FF7A59]">
+            </Link>
+            <Link href={`/${lang}/terms`} className="text-sm text-[#999999] transition-colors hover:text-[#FF7A59]">
               {t('terms')}
-            </a>
-            <a href={`/${lang}/refund`} className="text-sm text-[#999999] transition-colors hover:text-[#FF7A59]">
+            </Link>
+            <Link href={`/${lang}/refund`} className="text-sm text-[#999999] transition-colors hover:text-[#FF7A59]">
               {t('refund')}
-            </a>
-            <a href="#" className="text-sm text-[#999999] transition-colors hover:text-[#FF7A59]">
+            </Link>
+            <Link href="#" className="text-sm text-[#999999] transition-colors hover:text-[#FF7A59]">
               {t('contact')}
-            </a>
+            </Link>
           </div>
         </div>
 
