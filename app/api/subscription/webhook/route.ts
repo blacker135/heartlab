@@ -18,6 +18,17 @@ interface PayPalWebhookEvent {
   };
 }
 
+/** PayPal 状态 → DB status */
+function mapStatus(paypalStatus: string): string {
+  const statusMap: Record<string, string> = {
+    ACTIVE: 'active',
+    SUSPENDED: 'suspended',
+    CANCELLED: 'cancelled',
+    EXPIRED: 'expired',
+  };
+  return statusMap[paypalStatus] || 'cancelled';
+}
+
 export async function POST(request: Request) {
   const rawBody = await request.text();
 
@@ -46,37 +57,43 @@ export async function POST(request: Request) {
 
   try {
     switch (eventType) {
-      case 'BILLING.SUBSCRIPTION.ACTIVATED': {
-        // activate API 已插入记录，webhook 只做状态确认更新
-        await db
-          .update(schema.subscriptions)
-          .set({
-            status: 'active',
-            currentPeriodEnd: nextBilling ? new Date(nextBilling) : undefined,
-            updatedAt: new Date(),
-          })
-          .where(eq(schema.subscriptions.paypalSubscriptionId, subId));
-        break;
-      }
-
+      case 'BILLING.SUBSCRIPTION.ACTIVATED':
       case 'BILLING.SUBSCRIPTION.RENEWED': {
-        // PayPal 自动续费成功 → 更新下一周期结束时间
+        // upsert：webhook 可能在 activate API 之前到达
+        const variantName = planId ? (getVariantName(planId) || 'starter') : 'starter';
+
         await db
-          .update(schema.subscriptions)
-          .set({
+          .insert(schema.subscriptions)
+          .values({
+            paypalSubscriptionId: subId,
+            paypalPlanId: planId,
+            variantName,
             status: 'active',
+            currentPeriodStart: new Date(),
             currentPeriodEnd: nextBilling ? new Date(nextBilling) : undefined,
-            updatedAt: new Date(),
+            userId: '', // 占位；webhook 无 userId，后续可通过 activate API 更新
           })
-          .where(eq(schema.subscriptions.paypalSubscriptionId, subId));
+          .onConflictDoUpdate({
+            target: schema.subscriptions.paypalSubscriptionId,
+            set: {
+              status: 'active',
+              ...(planId ? { paypalPlanId: planId, variantName } : {}),
+              ...(nextBilling ? { currentPeriodEnd: new Date(nextBilling) } : {}),
+              updatedAt: new Date(),
+            },
+          });
         break;
       }
 
       case 'BILLING.SUBSCRIPTION.CANCELLED':
+      case 'BILLING.SUBSCRIPTION.SUSPENDED':
       case 'BILLING.SUBSCRIPTION.EXPIRED':
       case 'BILLING.SUBSCRIPTION.PAYMENT_FAILED': {
-        const newStatus =
-          eventType === 'BILLING.SUBSCRIPTION.EXPIRED' ? 'expired' : 'cancelled';
+        const newStatus = mapStatus(
+          eventType === 'BILLING.SUBSCRIPTION.SUSPENDED' ? 'SUSPENDED'
+            : eventType === 'BILLING.SUBSCRIPTION.EXPIRED' ? 'EXPIRED'
+            : eventStatus || 'CANCELLED'
+        );
 
         await db
           .update(schema.subscriptions)
@@ -92,7 +109,6 @@ export async function POST(request: Request) {
       case 'BILLING.SUBSCRIPTION.UPDATED': {
         const updates: Record<string, unknown> = {};
 
-        // 方案升级/降级：同步 planId 和 variantName
         if (planId) {
           updates.paypalPlanId = planId;
           const newVariant = getVariantName(planId);
@@ -100,13 +116,7 @@ export async function POST(request: Request) {
         }
 
         if (eventStatus) {
-          const statusMap: Record<string, string> = {
-            ACTIVE: 'active',
-            SUSPENDED: 'cancelled',
-            CANCELLED: 'cancelled',
-            EXPIRED: 'expired',
-          };
-          updates.status = statusMap[eventStatus] || 'cancelled';
+          updates.status = mapStatus(eventStatus);
         }
         if (nextBilling) updates.currentPeriodEnd = new Date(nextBilling);
         updates.updatedAt = new Date();
