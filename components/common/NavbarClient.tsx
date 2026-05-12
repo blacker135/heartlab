@@ -290,6 +290,14 @@ export function NavbarClient({ lang, user, membership }: NavbarClientProps) {
                     {user.name || user.email}
                   </div>
                   <div className="my-1 border-t border-gray-100" />
+                  <Link
+                    href={`/${lang}/settings`}
+                    role="menuitem"
+                    className="block w-full px-4 py-2 text-left text-sm text-[#777777] hover:bg-gray-50 hover:text-[#FF7A59] transition-colors"
+                    onClick={() => setDropdownOpen(false)}
+                  >
+                    Settings
+                  </Link>
                   <button
                     onClick={handleLogout}
                     role="menuitem"
