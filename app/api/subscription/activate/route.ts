@@ -54,6 +54,7 @@ export async function POST(request: Request) {
       .onConflictDoUpdate({
         target: schema.subscriptions.paypalSubscriptionId,
         set: {
+          userId: session.user.id,
           paypalPlanId: body.plan_id,
           variantName,
           status: 'active',
