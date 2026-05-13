@@ -13,6 +13,14 @@ const EXPERT_INITIAL: Record<ExpertId, string> = {
   adrian: 'A',
 };
 
+/** 专家显示名称（用于 aria-label） */
+const EXPERT_NAMES: Record<ExpertId, string> = {
+  evan: 'Evan Pierce',
+  liam: 'Liam Hart',
+  noah: 'Noah Sinclair',
+  adrian: 'Adrian Cole',
+};
+
 /** ExpertAvatar 属性 */
 interface ExpertAvatarProps {
   expert: ExpertId;
@@ -46,13 +54,14 @@ function getSizeClasses(size: 'sm' | 'md' | 'lg') {
 export function ExpertAvatar({ expert, size = 'md', className = '' }: ExpertAvatarProps) {
   const meta = EXPERT_META[expert] || EXPERT_META.liam;
   const initial = EXPERT_INITIAL[expert] || 'L';
+  const name = EXPERT_NAMES[expert] || 'Liam Hart';
   const sizeClasses = getSizeClasses(size);
 
   return (
     <div
       className={`flex items-center justify-center rounded-full font-bold text-white select-none ${sizeClasses} ${className}`}
       style={{ backgroundColor: meta.color }}
-      aria-label={`${expert} avatar`}
+      aria-label={`${name}`}
     >
       {initial}
     </div>
