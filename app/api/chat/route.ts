@@ -35,7 +35,14 @@ export async function POST(request: Request) {
   }
 
   if (!checkRateLimit(session.user.id)) {
-    return Response.json({ error: 'Rate limit exceeded' }, { status: 429 });
+    // 计算距重置还剩多少秒
+    const now = Date.now();
+    const entry = rateLimitMap.get(session.user.id);
+    const retryAfter = entry ? Math.ceil((entry.resetTime - now) / 1000) : 60;
+    return Response.json(
+      { error: 'Rate limit exceeded', retryAfter },
+      { status: 429, headers: { 'Retry-After': String(retryAfter) } },
+    );
   }
 
   // ---------- 订阅门控 ----------

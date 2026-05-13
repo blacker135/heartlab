@@ -48,6 +48,7 @@ export default function ChatPageClient() {
   // 错误状态管理
   const [error, setError] = useState<string | null>(null);
   const [rateLimited, setRateLimited] = useState(false);
+  const [retryAfter, setRetryAfter] = useState(0); // 限流冷却剩余秒数
   const [sending, setSending] = useState(false);
   const [sidebarRefreshKey, setSidebarRefreshKey] = useState(0);
   const abortControllerRef = useRef<AbortController | null>(null);
@@ -75,6 +76,18 @@ export default function ChatPageClient() {
       })
       .catch((err) => console.error('Failed to load subscription status:', err));
   }, []);
+
+  // 限流倒计时
+  useEffect(() => {
+    if (retryAfter <= 0) return;
+    const timer = setInterval(() => {
+      setRetryAfter((prev) => {
+        if (prev <= 1) return 0;
+        return prev - 1;
+      });
+    }, 1000);
+    return () => clearInterval(timer);
+  }, [retryAfter]);
 
   // ---------- 处理 URL 预填问题 ----------
   useEffect(() => {
@@ -159,7 +172,10 @@ export default function ChatPageClient() {
         // 限流错误特殊处理（429 Too Many Requests）
         if (res.status === 429) {
           setRateLimited(true);
-          setError('发送太快了，请稍等片刻再试。'); // Sending too fast
+          const data = await res.json().catch(() => ({}));
+          const waitSeconds = data.retryAfter || 60;
+          setRetryAfter(waitSeconds);
+          setError(`发送太快了，请等待 ${waitSeconds} 秒后重试。`);
           // 移除已添加的用户消息（乐观更新回滚）
           setMessages((prev) => prev.filter((m) => m !== userMsg));
           return;
@@ -394,6 +410,7 @@ export default function ChatPageClient() {
   const handleClearError = () => {
     setError(null);
     setRateLimited(false);
+    setRetryAfter(0);
   };
 
   // 停止生成
@@ -427,7 +444,7 @@ export default function ChatPageClient() {
           <div className="mx-4 mt-3 flex items-center gap-3 rounded-[12px] border border-red-200 bg-red-50 px-4 py-3 lg:mx-6">
             <div className="flex-1">
               <p className="text-sm font-medium text-red-800">
-                {rateLimited ? '发送太快' : '出错了'}
+                {rateLimited ? `发送太快 (${retryAfter}s 后可重试)` : '出错了'}
               </p>
               <p className="text-xs text-red-600">{error}</p>
             </div>
@@ -443,11 +460,11 @@ export default function ChatPageClient() {
                 type="button"
                 onClick={() => {
                   handleClearError();
-                  // 用户可以重新发送上一条用户消息
                 }}
-                className="flex-shrink-0 rounded-[8px] bg-[#FF7A59] px-3 py-1 text-xs font-medium text-white transition-colors hover:bg-[#FF7A59]/90"
+                disabled={retryAfter > 0}
+                className="flex-shrink-0 rounded-[8px] bg-[#FF7A59] px-3 py-1 text-xs font-medium text-white transition-colors hover:bg-[#FF7A59]/90 disabled:opacity-50 disabled:cursor-not-allowed"
               >
-                重试
+                {retryAfter > 0 ? `重试 (${retryAfter}s)` : '重试'}
               </button>
             )}
           </div>
