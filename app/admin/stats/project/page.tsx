@@ -16,20 +16,31 @@ export default function ProjectStatsPage() {
     return { start: today, end: today, preset: 'day' };
   });
   const [data, setData] = useState<any>(null);
+  const [error, setError] = useState<string | null>(null);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
     setLoading(true);
+    setError(null);
     const params = new URLSearchParams({ start: dateRange.start, end: dateRange.end });
     fetch(`/api/admin/stats/project?${params}`)
       .then((r) => r.json())
       .then((d) => {
-        setData(d);
+        if (d.error) {
+          setError(d.error);
+        } else {
+          setData(d);
+        }
+        setLoading(false);
+      })
+      .catch((err) => {
+        setError(err.message || '请求失败');
         setLoading(false);
       });
   }, [dateRange]);
 
   if (loading) return <div className="p-6 text-gray-400">加载中...</div>;
+  if (error) return <div className="p-6 text-red-500">数据加载失败: {error}</div>;
   if (!data) return null;
 
   return (

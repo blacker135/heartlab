@@ -105,7 +105,7 @@ export async function queryRetentionSeries(
   const result = await db.execute<{ dayN: number; rate: number }>(
     sql`SELECT day_n::int as "dayN", retention_rate::numeric as rate
         FROM analytics_retention
-        WHERE cohort_date = ${cohortDate}::date AND day_n = ANY(${days}::smallint[])
+        WHERE cohort_date = ${cohortDate}::date AND day_n IN (${days})
         ORDER BY day_n`
   );
   return result.rows.map((r) => ({ dayN: r.dayN, rate: Number(r.rate) }));
