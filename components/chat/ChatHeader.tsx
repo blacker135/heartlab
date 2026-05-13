@@ -56,7 +56,7 @@ export function ChatHeader({
         <button
           type="button"
           onClick={onToggleSidebar}
-          className="rounded-[8px] p-2 text-[#777777] transition-colors hover:bg-gray-100 lg:hidden"
+          className="rounded-[8px] p-2 text-[#777777] transition-colors hover:bg-gray-100 lg:hidden cursor-pointer touch-manipulation min-h-[44px] min-w-[44px]"
           aria-label="Open sidebar menu"
         >
           <svg
@@ -80,7 +80,7 @@ export function ChatHeader({
         type="button"
         onClick={onOpenExpertPanel}
         disabled={disabled}
-        className="flex items-center gap-2 rounded-[14px] border border-gray-200 bg-[#FAF7F2] px-3 py-2 text-sm font-medium text-text-primary transition-colors hover:bg-gray-100 disabled:cursor-not-allowed disabled:opacity-50 lg:px-4"
+        className="flex items-center gap-2 rounded-[14px] border border-gray-200 bg-[#FAF7F2] px-3 py-2 text-sm font-medium text-text-primary transition-colors hover:bg-gray-100 disabled:cursor-not-allowed disabled:opacity-50 lg:px-4 cursor-pointer touch-manipulation min-h-[44px]"
       >
         {/* 专家颜色圆点 */}
         <span
