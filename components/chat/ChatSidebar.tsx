@@ -85,6 +85,19 @@ export function ChatSidebar({ sidebarOpen = false, onClose, refreshKey = 0 }: Ch
     return date.toLocaleDateString('en-US', { month: 'short', day: 'numeric' });
   };
 
+  // ---------- 删除对话 ----------
+  const handleDelete = async (convId: string) => {
+    if (!window.confirm('Delete this conversation?')) return;
+    try {
+      const res = await fetch(`/api/conversations/${convId}`, { method: 'DELETE' });
+      if (res.ok) {
+        setConversations((prev) => prev.filter((c) => c.id !== convId));
+      }
+    } catch (err) {
+      console.error('Failed to delete conversation:', err);
+    }
+  };
+
   // 侧边栏左侧内容（桌面端和移动端共用样式）
   const sidebarContent = (
     <aside className="flex h-full w-72 flex-shrink-0 flex-col border-r border-gray-100 bg-white">
@@ -154,30 +167,45 @@ export function ChatSidebar({ sidebarOpen = false, onClose, refreshKey = 0 }: Ch
               const meta = EXPERT_META[expert] || EXPERT_META.liam;
 
               return (
-                <button
-                  key={conv.id}
-                  type="button"
-                  onClick={() => {
-                    router.push(`/${lang}/chat/${expert}?c=${conv.id}`);
-                    onClose?.();
-                  }}
-                  className="flex w-full items-center gap-3 rounded-[12px] px-3 py-2.5 text-left transition-colors hover:bg-gray-50"
-                >
-                  {/* 专家颜色圆点 */}
-                  <span
-                    className="h-2.5 w-2.5 flex-shrink-0 rounded-full"
-                    style={{ backgroundColor: meta.color }}
-                  />
-                  {/* 标题和日期 */}
-                  <div className="min-w-0 flex-1">
-                    <p className="truncate text-sm font-medium text-text-primary">
-                      {conv.title || 'New Conversation'}
-                    </p>
-                    <p className="text-xs text-text-secondary">
-                      {formatDate(conv.updatedAt)}
-                    </p>
-                  </div>
-                </button>
+                <div key={conv.id} className="group relative">
+                  <button
+                    type="button"
+                    onClick={() => {
+                      router.push(`/${lang}/chat/${expert}?c=${conv.id}`);
+                      onClose?.();
+                    }}
+                    className="flex w-full items-center gap-3 rounded-[12px] px-3 py-2.5 pr-10 text-left transition-colors hover:bg-gray-50"
+                  >
+                    {/* 专家颜色圆点 */}
+                    <span
+                      className="h-2.5 w-2.5 flex-shrink-0 rounded-full"
+                      style={{ backgroundColor: meta.color }}
+                    />
+                    {/* 标题和日期 */}
+                    <div className="min-w-0 flex-1">
+                      <p className="truncate text-sm font-medium text-text-primary">
+                        {conv.title || 'New Conversation'}
+                      </p>
+                      <p className="text-xs text-text-secondary">
+                        {formatDate(conv.updatedAt)}
+                      </p>
+                    </div>
+                  </button>
+                  {/* 删除按钮 — hover 时显示 */}
+                  <button
+                    type="button"
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      handleDelete(conv.id);
+                    }}
+                    className="absolute right-2 top-1/2 -translate-y-1/2 rounded-[8px] p-1.5 text-gray-400 opacity-0 transition-all hover:bg-red-50 hover:text-red-500 group-hover:opacity-100"
+                    aria-label="Delete conversation"
+                  >
+                    <svg className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+                      <path strokeLinecap="round" strokeLinejoin="round" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
+                    </svg>
+                  </button>
+                </div>
               );
             })}
           </div>
