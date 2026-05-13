@@ -114,6 +114,7 @@ export const profiles = pgTable('profiles', {
     .references(() => user.id, { onDelete: 'cascade' }),
   nickname: text('nickname'),
   trialUsed: integer('trial_used').default(0), // 试用消息使用次数
+  dailyLimit: integer('daily_limit'), // 按用户配置的日限额
   createdAt: timestamp('created_at').defaultNow(),
 });
 

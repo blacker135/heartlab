@@ -43,6 +43,13 @@
       "when": 1778600584806,
       "tag": "0005_analytics_tables",
       "breakpoints": true
+    },
+    {
+      "idx": 6,
+      "version": "7",
+      "when": 1747152000000,
+      "tag": "0006_add_daily_limit",
+      "breakpoints": true
     }
   ]
 }
