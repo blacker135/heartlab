@@ -19,13 +19,17 @@ interface ChatInputProps {
   onSend: (message: string) => void;
   /** 禁用发送（内容生成中） */
   disabled?: boolean;
+  /** AI 正在生成中 */
+  generating?: boolean;
+  /** 停止生成回调 */
+  onStop?: () => void;
 }
 
 /**
  * ChatInput — 聊天消息输入区域
  * 底部固定区域，包含输入框和发送按钮
  */
-export function ChatInput({ onSend, disabled = false }: ChatInputProps) {
+export function ChatInput({ onSend, disabled = false, generating = false, onStop }: ChatInputProps) {
   const t = useTranslations('chat');
   const [input, setInput] = useState('');
 
@@ -76,28 +80,40 @@ export function ChatInput({ onSend, disabled = false }: ChatInputProps) {
           }}
         />
 
-        {/* 发送按钮 — 圆形 + 箭头图标 */}
-        <button
-          type="submit"
-          disabled={disabled || !input.trim()}
-          className="flex h-9 w-9 flex-shrink-0 items-center justify-center rounded-full bg-[#FF7A59] text-white transition-all hover:bg-[#FF7A59]/90 disabled:cursor-not-allowed disabled:opacity-30"
-          aria-label={t('send')}
-        >
-          {/* ↑ 发送图标 — 垂直向上箭头 */}
-          <svg
-            className="h-4 w-4"
-            fill="none"
-            viewBox="0 0 24 24"
-            stroke="currentColor"
-            strokeWidth={2}
+        {/* 发送 / 停止按钮 */}
+        {generating ? (
+          <button
+            type="button"
+            onClick={onStop}
+            className="flex h-9 w-9 flex-shrink-0 items-center justify-center rounded-full bg-red-500 text-white transition-all hover:bg-red-600"
+            aria-label="Stop generating"
           >
-            <path
-              strokeLinecap="round"
-              strokeLinejoin="round"
-              d="M12 19V5m0 0l-7 7m7-7l7 7"
-            />
-          </svg>
-        </button>
+            <svg className="h-4 w-4" fill="currentColor" viewBox="0 0 24 24">
+              <rect x="4" y="4" width="16" height="16" rx="2" />
+            </svg>
+          </button>
+        ) : (
+          <button
+            type="submit"
+            disabled={disabled || !input.trim()}
+            className="flex h-9 w-9 flex-shrink-0 items-center justify-center rounded-full bg-[#FF7A59] text-white transition-all hover:bg-[#FF7A59]/90 disabled:cursor-not-allowed disabled:opacity-30"
+            aria-label={t('send')}
+          >
+            <svg
+              className="h-4 w-4"
+              fill="none"
+              viewBox="0 0 24 24"
+              stroke="currentColor"
+              strokeWidth={2}
+            >
+              <path
+                strokeLinecap="round"
+                strokeLinejoin="round"
+                d="M12 19V5m0 0l-7 7m7-7l7 7"
+              />
+            </svg>
+          </button>
+        )}
       </form>
     </div>
   );

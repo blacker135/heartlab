@@ -14,7 +14,7 @@
 
 'use client';
 
-import { useState, useEffect, useCallback } from 'react';
+import { useState, useEffect, useCallback, useRef } from 'react';
 import { useParams, useSearchParams } from 'next/navigation';
 import { ChatSidebar } from '@/components/chat/ChatSidebar';
 import { ChatHeader } from '@/components/chat/ChatHeader';
@@ -50,6 +50,7 @@ export default function ChatPageClient() {
   const [rateLimited, setRateLimited] = useState(false);
   const [sending, setSending] = useState(false);
   const [sidebarRefreshKey, setSidebarRefreshKey] = useState(0);
+  const abortControllerRef = useRef<AbortController | null>(null);
 
   // ---------- 订阅状态 ----------
   const [subscriptionStatus, setSubscriptionStatus] = useState<{
@@ -138,6 +139,10 @@ export default function ChatPageClient() {
       setMessages((prev) => [...prev, userMsg]);
 
       try {
+        // 创建 AbortController 用于停止生成
+        const controller = new AbortController();
+        abortControllerRef.current = controller;
+
         // 调用 SSE 流式对话 API
         const res = await fetch('/api/chat', {
           method: 'POST',
@@ -148,6 +153,7 @@ export default function ChatPageClient() {
             message,
             language: params.lang,
           }),
+          signal: controller.signal,
         });
 
         // 限流错误特殊处理（429 Too Many Requests）
@@ -263,6 +269,10 @@ export default function ChatPageClient() {
           }
         }
       } catch (err) {
+        if (err instanceof DOMException && err.name === 'AbortError') {
+          // 用户主动停止，保留已生成的部分内容
+          return;
+        }
         console.error('Chat send error:', err);
         const netErr = '网络错误，请检查连接后重试。';
         setError(netErr);
@@ -271,6 +281,7 @@ export default function ChatPageClient() {
           { role: 'assistant', content: netErr },
         ]);
       } finally {
+        abortControllerRef.current = null;
         setSending(false);
       }
     },
@@ -310,6 +321,7 @@ export default function ChatPageClient() {
       });
 
       if (!res.ok) {
+        abortControllerRef.current = null;
         setSending(false);
         return;
       }
@@ -373,6 +385,7 @@ export default function ChatPageClient() {
     } catch (err) {
       console.error('Expert switch error:', err);
     } finally {
+      abortControllerRef.current = null;
       setSending(false);
     }
   };
@@ -381,6 +394,12 @@ export default function ChatPageClient() {
   const handleClearError = () => {
     setError(null);
     setRateLimited(false);
+  };
+
+  // 停止生成
+  const handleStop = () => {
+    abortControllerRef.current?.abort();
+    abortControllerRef.current = null;
   };
 
   // ---------- 渲染 ----------
@@ -443,7 +462,12 @@ export default function ChatPageClient() {
         />
 
         {/* 底部输入区域 */}
-        <ChatInput onSend={handleSend} disabled={sending} />
+        <ChatInput
+          onSend={handleSend}
+          disabled={sending}
+          generating={sending}
+          onStop={handleStop}
+        />
       </div>
 
       {/* 专家切换浮动面板（条件渲染） */}
