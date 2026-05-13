@@ -13,8 +13,11 @@ export async function GET(req: NextRequest) {
   const { searchParams } = new URL(req.url);
   const search = searchParams.get('search') || '';
   const variant = searchParams.get('variant') || '';
-  const page = parseInt(searchParams.get('page') || '1', 10);
-  const pageSize = parseInt(searchParams.get('pageSize') || '20', 10);
+  const page = Math.max(parseInt(searchParams.get('page') || '1', 10), 1);
+  const pageSize = Math.min(
+    parseInt(searchParams.get('pageSize') || '20', 10),
+    100,
+  );
 
   try {
     const data = await queryUsers({ search, variant: variant || undefined, page, pageSize });
