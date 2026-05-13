@@ -10,6 +10,8 @@
 'use client';
 
 import { motion } from 'framer-motion';
+import ReactMarkdown from 'react-markdown';
+import remarkGfm from 'remark-gfm';
 
 /** MessageBubble Props */
 interface MessageBubbleProps {
@@ -70,16 +72,23 @@ export function MessageBubble({ role, content }: MessageBubbleProps) {
         className={`rounded-[18px] px-5 py-3 text-sm leading-relaxed ${
           isUser
             ? 'max-w-[70%] bg-[#FF7A59]/10 text-text-primary'
-            : 'max-w-[80%] border border-gray-100 bg-white text-text-primary shadow-soft'
+            : 'max-w-[80%] border border-gray-100 bg-white text-text-primary shadow-soft prose prose-sm prose-p:my-1 prose-ul:my-1 prose-ol:my-1 prose-li:my-0.5 prose-headings:my-2 prose-a:text-[#FF7A59]'
         }`}
       >
-        {/* 保留换行符 */}
-        {content.split('\n').map((line, i) => (
-          <span key={i}>
-            {i > 0 && <br />}
-            {line}
-          </span>
-        ))}
+        {isUser ? (
+          // 用户消息保持纯文本
+          content.split('\n').map((line, i) => (
+            <span key={i}>
+              {i > 0 && <br />}
+              {line}
+            </span>
+          ))
+        ) : (
+          // AI 消息使用 Markdown 渲染（支持表格、粗体、列表、链接等）
+          <ReactMarkdown remarkPlugins={[remarkGfm]}>
+            {content}
+          </ReactMarkdown>
+        )}
       </div>
     </motion.div>
   );
