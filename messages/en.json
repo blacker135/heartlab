@@ -282,7 +282,7 @@
     "expertLocked": "Upgrade to Pro or Ultra to unlock this expert",
     "features": {
       "dailyMessages": "{count} messages / day",
-      "expertsStarter": "Evan & Liam only",
+      "expertsStart": "Evan & Liam only",
       "expertsAll": "All 4 experts",
       "unlimitedMessages": "Unlimited messages",
       "historyDays": "{count}-day chat history",

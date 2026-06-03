@@ -11,13 +11,13 @@ const TRIAL_LIMIT = 3;
 
 /** 日限额配置（默认值，可被 profiles.daily_limit 覆盖） */
 const DAILY_LIMITS: Record<string, number> = {
-  starter: 30,
+  start: 30,
   pro: 100,
   ultra: 10000,
 };
 
-/** Starter 可访问的专家 */
-const STARTER_EXPERTS: ExpertId[] = ['evan', 'liam'];
+/** Start 可访问的专家 */
+const START_EXPERTS: ExpertId[] = ['evan', 'liam'];
 
 /** 允许通过的结果 */
 interface GateAllowed {
@@ -133,7 +133,7 @@ export async function checkSubscriptionGate(
   }
 
   // 3. 已订阅 → 专家锁定检查
-  if (variant === 'starter' && !STARTER_EXPERTS.includes(expert)) {
+  if (variant === 'start' && !START_EXPERTS.includes(expert)) {
     return {
       allowed: false,
       code: 'EXPERT_LOCKED',

@@ -38,7 +38,7 @@ interface PlanBenefit {
 }
 
 const PLAN_BENEFITS: Record<string, PlanBenefit> = {
-  starter: {
+  start: {
     messagesKey: 'membership.benefitMessages',
     messagesCount: 30,
     expertsKey: 'membership.benefitExperts',
@@ -143,7 +143,7 @@ export function NavbarClient({ lang, user, membership, isAdmin = false }: Navbar
 
   // 会员等级配色映射
   const variantBadgeClass: Record<string, string> = {
-    starter: 'bg-gray-100 text-gray-600',
+    start: 'bg-gray-100 text-gray-600',
     pro: 'bg-blue-50 text-blue-600',
     ultra: 'bg-amber-50 text-amber-600',
   };

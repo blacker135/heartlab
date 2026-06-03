@@ -60,7 +60,7 @@ export async function POST(request: Request) {
       case 'BILLING.SUBSCRIPTION.ACTIVATED':
       case 'BILLING.SUBSCRIPTION.RENEWED': {
         // upsert：webhook 可能在 activate API 之前到达
-        const variantName = planId ? (getVariantName(planId) || 'starter') : 'starter';
+        const variantName = planId ? (getVariantName(planId) || 'start') : 'start';
 
         await db
           .insert(schema.subscriptions)

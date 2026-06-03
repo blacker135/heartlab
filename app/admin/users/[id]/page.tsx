@@ -34,7 +34,7 @@ interface EditableForm {
 
 const VARIANTS = [
   { label: 'Free', value: 'free' },
-  { label: 'Starter', value: 'starter' },
+  { label: 'Start', value: 'start' },
   { label: 'Pro', value: 'pro' },
   { label: 'Ultra', value: 'ultra' },
   { label: 'Admin', value: 'admin' },

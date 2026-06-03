@@ -4,7 +4,7 @@
 /**
  * 面向业务的订阅等级名称
  */
-export type VariantName = 'starter' | 'pro' | 'ultra';
+export type VariantName = 'start' | 'pro' | 'ultra';
 
 /**
  * PayPal Plan ID → 等级名称 的映射表
@@ -17,13 +17,13 @@ const PLAN_MAP: Record<string, VariantName> = {};
  */
 function initPlanMap() {
   const pairs: [string | undefined, VariantName][] = [
-    [process.env.PAYPAL_PLAN_STARTER_MONTHLY, 'starter'],
-    [process.env.PAYPAL_PLAN_STARTER_YEARLY, 'starter'],
+    [process.env.PAYPAL_PLAN_START_MONTHLY, 'start'],
+    [process.env.PAYPAL_PLAN_START_YEARLY, 'start'],
     [process.env.PAYPAL_PLAN_PRO_MONTHLY, 'pro'],
     [process.env.PAYPAL_PLAN_PRO_YEARLY, 'pro'],
     [process.env.PAYPAL_PLAN_ULTRA_MONTHLY, 'ultra'],
     [process.env.PAYPAL_PLAN_ULTRA_YEARLY, 'ultra'],
-    [process.env.PAYPAL_PLAN_TEST, 'starter'],
+    [process.env.PAYPAL_PLAN_TEST, 'start'],
   ];
   for (const [id, name] of pairs) {
     if (id) PLAN_MAP[id] = name;

@@ -1,7 +1,7 @@
 // app/api/cron/cleanup/route.ts
 // GET /api/cron/cleanup — Vercel Cron Job 清理过期消息
 // 根据用户订阅等级决定消息保留期限：
-//   - Starter 用户: 删除 7 天前的消息
+//   - Start 用户: 删除 7 天前的消息
 //   - Pro 用户: 删除 30 天前的消息
 //   - Ultra 用户: 不清理
 //   - 未订阅用户: 删除 7 天前的消息
@@ -37,25 +37,25 @@ export async function GET(request: Request) {
       .where(eq(schema.subscriptions.status, 'active'));
 
     // 按订阅等级分类用户
-    const starterUserIds = activeSubs
-      .filter((s) => s.variantName === 'starter')
+    const startUserIds = activeSubs
+      .filter((s) => s.variantName === 'start')
       .map((s) => s.userId);
     const proUserIds = activeSubs
       .filter((s) => s.variantName === 'pro')
       .map((s) => s.userId);
     // Ultra 用户不清理，无需收集
 
-    let cleanedStarter = 0;
+    let cleanedStart = 0;
     let cleanedPro = 0;
     let cleanedUnsub = 0;
 
-    // Starter: 批量删除 7 天前的消息
-    if (starterUserIds.length > 0) {
+    // Start: 批量删除 7 天前的消息
+    if (startUserIds.length > 0) {
       const cutoff = new Date(now.getTime() - 7 * 24 * 60 * 60 * 1000);
       const convs = await db
         .select({ id: schema.conversations.id })
         .from(schema.conversations)
-        .where(inArray(schema.conversations.userId, starterUserIds));
+        .where(inArray(schema.conversations.userId, startUserIds));
 
       const convIds = convs.map((c) => c.id);
       if (convIds.length > 0) {
@@ -67,7 +67,7 @@ export async function GET(request: Request) {
               lte(schema.messages.createdAt, cutoff),
             ),
           );
-        cleanedStarter = result.rowCount || 0;
+        cleanedStart = result.rowCount || 0;
       }
     }
 
@@ -121,7 +121,7 @@ export async function GET(request: Request) {
 
     return Response.json({
       cleaned: true,
-      starterMessagesDeleted: cleanedStarter,
+      startMessagesDeleted: cleanedStart,
       proMessagesDeleted: cleanedPro,
       unsubMessagesDeleted: cleanedUnsub,
     });

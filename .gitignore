@@ -8,3 +8,5 @@ node_modules/
 .pg_password
 .vercel
 .env*
+preview
+production

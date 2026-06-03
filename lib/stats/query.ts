@@ -202,7 +202,7 @@ export async function queryTrafficSeries(range: DateRange): Promise<{
 /** 用户列表（搜索/筛选/分页） */
 export interface UserListParams {
   search?: string;
-  variant?: string;  // 按会员身份筛选：free | starter | pro | ultra | admin
+  variant?: string;  // 按会员身份筛选：free | start | pro | ultra | admin
   page: number;
   pageSize: number;
 }
@@ -234,7 +234,7 @@ export async function queryUsers(params: UserListParams): Promise<{ users: UserR
       // 免费用户：无订阅记录 或 订阅状态非 active
       conditions.push(sql`AND (s.id IS NULL OR s.status != 'active')`);
     } else {
-      // 按具体会员身份筛选（starter / pro / ultra / admin）
+      // 按具体会员身份筛选（start / pro / ultra / admin）
       conditions.push(sql`AND s.status = 'active' AND s.variant_name = ${params.variant}`);
     }
   }

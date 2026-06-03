@@ -282,7 +282,7 @@
     "expertLocked": "升级到 Pro 或 Ultra 以解锁该专家",
     "features": {
       "dailyMessages": "每日 {count} 条消息",
-      "expertsStarter": "仅 Evan & Liam",
+      "expertsStart": "仅 Evan & Liam",
       "expertsAll": "全部 4 位专家",
       "unlimitedMessages": "消息无限制",
       "historyDays": "{count} 天对话历史",

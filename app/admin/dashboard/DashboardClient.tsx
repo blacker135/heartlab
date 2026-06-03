@@ -45,7 +45,7 @@ export default function DashboardClient({
         <DistributionChart data={expertDistribution} label="专家使用分布" />
         <DistributionChart
           data={[
-            { name: 'Starter', value: activeSubscriptions > 0 ? Math.max(totalUsers - activeSubscriptions, 0) : totalUsers, color: '#f59e0b' },
+            { name: '免费用户', value: activeSubscriptions > 0 ? Math.max(totalUsers - activeSubscriptions, 0) : totalUsers, color: '#f59e0b' },
             { name: '付费用户', value: activeSubscriptions, color: '#3b82f6' },
           ]}
           label="会员构成"

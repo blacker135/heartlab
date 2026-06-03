@@ -16,8 +16,8 @@ export default async function PricingPage({
   const showTestPlan = process.env.NEXT_PUBLIC_SHOW_TEST_PLAN === 'true';
 
   const planIds = {
-    starterMonthly: process.env.PAYPAL_PLAN_STARTER_MONTHLY || '',
-    starterYearly: process.env.PAYPAL_PLAN_STARTER_YEARLY || '',
+    startMonthly: process.env.PAYPAL_PLAN_START_MONTHLY || '',
+    startYearly: process.env.PAYPAL_PLAN_START_YEARLY || '',
     proMonthly: process.env.PAYPAL_PLAN_PRO_MONTHLY || '',
     proYearly: process.env.PAYPAL_PLAN_PRO_YEARLY || '',
     ultraMonthly: process.env.PAYPAL_PLAN_ULTRA_MONTHLY || '',

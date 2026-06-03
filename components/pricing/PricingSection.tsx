@@ -9,8 +9,8 @@ import { PayPalScriptProvider } from '@paypal/react-paypal-js';
 import { PricingCard } from './PricingCard';
 
 interface PlanIds {
-  starterMonthly: string;
-  starterYearly: string;
+  startMonthly: string;
+  startYearly: string;
   proMonthly: string;
   proYearly: string;
   ultraMonthly: string;
@@ -35,14 +35,14 @@ export function PricingSection({ lang, isLoggedIn, showTestPlan, planIds }: Pric
   /** 三个定价方案的定义 */
   const plans = [
     {
-      id: 'starter',
-      name: 'Starter',
+      id: 'start',
+      name: 'Start',
       monthlyPrice: 9.9,
-      yearlyPrice: 108.9,
-      planId: isYearly ? planIds.starterYearly : planIds.starterMonthly,
+      yearlyPrice: 99.9,
+      planId: isYearly ? planIds.startYearly : planIds.startMonthly,
       features: [
         tp('features.dailyMessages', { count: 30 }),
-        tp('features.expertsStarter'),
+        tp('features.expertsStart'),
         tp('features.historyDays', { count: 7 }),
         tp('features.effectLight'),
       ],
@@ -50,8 +50,8 @@ export function PricingSection({ lang, isLoggedIn, showTestPlan, planIds }: Pric
     {
       id: 'pro',
       name: 'Pro',
-      monthlyPrice: 29.9,
-      yearlyPrice: 328.9,
+      monthlyPrice: 19.9,
+      yearlyPrice: 199.9,
       highlighted: true,
       planId: isYearly ? planIds.proYearly : planIds.proMonthly,
       features: [
@@ -64,8 +64,8 @@ export function PricingSection({ lang, isLoggedIn, showTestPlan, planIds }: Pric
     {
       id: 'ultra',
       name: 'Ultra',
-      monthlyPrice: 49.9,
-      yearlyPrice: 548.9,
+      monthlyPrice: 39.9,
+      yearlyPrice: 399.9,
       planId: isYearly ? planIds.ultraYearly : planIds.ultraMonthly,
       features: [
         tp('features.dailyMessages', { count: 10000 }),
@@ -147,7 +147,7 @@ export function PricingSection({ lang, isLoggedIn, showTestPlan, planIds }: Pric
                 planId: planIds.test,
                 features: [
                   tp('features.dailyMessages', { count: 30 }),
-                  tp('features.expertsStarter'),
+                  tp('features.expertsStart'),
                   tp('features.historyDays', { count: 7 }),
                   tp('features.effectLight'),
                 ],

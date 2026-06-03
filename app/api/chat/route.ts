@@ -142,7 +142,7 @@ export async function POST(request: Request) {
 
         // 根据订阅方案设置 AI 回复深度
         const maxTokensByVariant: Record<string, number> = {
-          starter: 512,
+          start: 512,
           pro: 1024,
           ultra: 2048,
         };

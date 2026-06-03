@@ -114,7 +114,7 @@ export function ExpertSwitchPanel({
               const meta = EXPERT_META[id];
               const isActive = currentExpert === id;
               const isLocked = subscriptionStatus?.subscribed
-                && subscriptionStatus?.variant === 'starter'
+                && subscriptionStatus?.variant === 'start'
                 && (id === 'noah' || id === 'adrian');
 
               return (

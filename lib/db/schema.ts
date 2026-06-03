@@ -90,7 +90,7 @@ export const subscriptions = pgTable('subscriptions', {
     .references(() => user.id, { onDelete: 'cascade' }),
   paypalSubscriptionId: text('paypal_subscription_id').notNull().unique(),
   paypalPlanId: text('paypal_plan_id').notNull(),
-  variantName: text('variant_name').notNull(), // 'starter' | 'pro' | 'ultra'
+  variantName: text('variant_name').notNull(), // 'start' | 'pro' | 'ultra'
   status: subscriptionStatusEnum('status').notNull().default('active'),
   currentPeriodStart: timestamp('current_period_start'),
   currentPeriodEnd: timestamp('current_period_end'),

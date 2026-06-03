@@ -18,14 +18,14 @@ export interface UnifiedUserRow {
 }
 
 const DEFAULT_DAILY_LIMITS: Record<string, number> = {
-  starter: 30,
+  start: 30,
   pro: 100,
   ultra: 10000,
 };
 
 const VARIANT_COLORS: Record<string, string> = {
   free: 'bg-gray-50 text-gray-600',
-  starter: 'bg-blue-50 text-blue-700',
+  start: 'bg-blue-50 text-blue-700',
   pro: 'bg-purple-50 text-purple-700',
   ultra: 'bg-amber-50 text-amber-700',
   admin: 'bg-red-50 text-red-700',
