@@ -271,7 +271,7 @@
     "year": "年",
     "month": "月",
     "yearlySave": "${monthly}/月 — 年付更优惠（${yearly}/年）",
-    "savePercent": "省 {percent}%",
+    "cheaperAnnually": "年付更省",
     "subscribe": "立即订阅",
     "startTrial": "开始免费试用",
     "trialBanner": "免费试用：已使用 {used}/{limit} 条消息。",

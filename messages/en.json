@@ -271,7 +271,7 @@
     "year": "year",
     "month": "month",
     "yearlySave": "${monthly}/mo — save with yearly billing (${yearly}/year)",
-    "savePercent": "Save {percent}%",
+    "cheaperAnnually": "Cheaper annually",
     "subscribe": "Subscribe Now",
     "startTrial": "Start Free Trial",
     "trialBanner": "Free trial: {used}/{limit} messages used. ",

@@ -76,11 +76,6 @@ export function PricingSection({ lang, isLoggedIn, showTestPlan, planIds }: Pric
     },
   ];
 
-  // 计算年付折扣百分比
-  const maxSavePercent = Math.round(
-    (1 - plans[2].yearlyPrice / (plans[2].monthlyPrice * 12)) * 100
-  );
-
   return (
     <PayPalScriptProvider
       options={{
@@ -118,7 +113,7 @@ export function PricingSection({ lang, isLoggedIn, showTestPlan, planIds }: Pric
               {tp('yearly')}
             </button>
             <span className="ml-1 rounded-full bg-[#FF7A59]/10 px-2 py-0.5 text-xs font-medium text-[#FF7A59]">
-              {tp('savePercent', { percent: maxSavePercent })}
+              {tp('cheaperAnnually')}
             </span>
           </div>
         </div>
